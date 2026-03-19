@@ -81,6 +81,81 @@ const cases = [
     why: 'PEA is not a shockable rhythm. The immediate branch is high-quality CPR plus epinephrine as soon as possible, while you search for reversible causes.',
     ecg: '14,58 20,56 26,58 32,54 38,56 44,58 50,56 56,58 62,54 68,56 74,58 80,56 86,58',
   },
+  {
+    id: 'first-degree-block',
+    title: 'Case 5',
+    rhythm: 'Sinus rhythm with a long but fixed PR interval',
+    presentation: 'Incidental rhythm on a stable patient',
+    bpm: 62,
+    pulse: 'Regular pulse present',
+    hemodynamics: 'Comfortable, talking, normal perfusion',
+    clues: ['Every P wave is followed by a QRS', 'PR interval stays prolonged but constant', 'No dropped beats'],
+    question: 'Which rhythm pattern best fits this strip?',
+    options: ['First-degree AV block', 'Second-degree AV block', 'Third-degree AV block', 'Ventricular bigeminy'],
+    answer: 0,
+    why: 'This is first-degree AV block because every atrial impulse conducts, but the PR interval is prolonged and fixed. In an otherwise stable patient, this is usually monitored rather than shocked or paced.',
+    ecg: '10,56 14,54 18,56 24,56 30,18 34,74 38,44 44,56 50,56 56,18 60,74 64,44 70,56 76,56 82,18 86,74',
+  },
+  {
+    id: 'second-degree-block',
+    title: 'Case 6',
+    rhythm: 'Grouped beats with an occasional dropped QRS',
+    presentation: 'Lightheaded patient with intermittent pauses',
+    bpm: 44,
+    pulse: 'Slow irregular pulse present',
+    hemodynamics: 'Dizzy but not pulseless',
+    clues: ['PR interval lengthens across the group', 'A P wave appears without a QRS after it', 'Then the cycle repeats'],
+    question: 'Which rhythm pattern best fits this strip?',
+    options: ['First-degree AV block', 'Second-degree AV block (Mobitz I)', 'Third-degree AV block', 'PEA'],
+    answer: 1,
+    why: 'Progressive PR prolongation followed by a dropped beat is the classic Wenckebach pattern, which is second-degree AV block type I. If symptomatic, treatment follows the bradycardia pathway rather than shock.',
+    ecg: '8,56 14,54 20,56 28,18 32,74 36,44 42,56 48,54 56,56 64,18 68,74 72,44 78,54 84,56',
+  },
+  {
+    id: 'third-degree-block',
+    title: 'Case 7',
+    rhythm: 'Severe bradycardia with AV dissociation',
+    presentation: 'Near-syncope with very slow perfusion',
+    bpm: 28,
+    pulse: 'Very slow pulse present',
+    hemodynamics: 'Pale, weak, about to pass out',
+    clues: ['P waves and QRS complexes do not line up', 'Atrial activity marches through independently', 'Ventricular escape rhythm is slow'],
+    question: 'Which rhythm pattern best fits this strip?',
+    options: ['First-degree AV block', 'Second-degree AV block', 'Third-degree AV block', 'Ventricular trigeminy'],
+    answer: 2,
+    why: 'This is third-degree AV block because the atria and ventricles are dissociated. In a symptomatic patient, think pacing rather than cardioversion or defibrillation.',
+    ecg: '10,54 16,56 22,54 30,20 34,76 38,46 46,54 52,56 58,54 66,20 70,76 74,46 82,54 88,56',
+  },
+  {
+    id: 'bigeminy',
+    title: 'Case 8',
+    rhythm: 'Alternating normal beats and wide premature beats',
+    presentation: 'Palpitations after caffeine and poor sleep',
+    bpm: 88,
+    pulse: 'Pulse present',
+    hemodynamics: 'Stable and talking',
+    clues: ['Every other beat is a PVC', 'The ectopic beat is wide and premature', 'Pattern repeats 1:1'],
+    question: 'Which rhythm pattern best fits this strip?',
+    options: ['First-degree AV block', 'Ventricular bigeminy', 'Ventricular trigeminy', 'Pulseless VT'],
+    answer: 1,
+    why: 'PVCs occurring every other beat is ventricular bigeminy. In a stable patient, the usual next step is assessment, monitoring, and correction of triggers rather than shock.',
+    ecg: '10,56 16,18 20,76 24,44 32,56 38,18 42,76 46,44 54,56 60,18 64,76 68,44 76,56 82,18 86,76',
+  },
+  {
+    id: 'trigeminy',
+    title: 'Case 9',
+    rhythm: 'Two normal beats followed by one wide premature beat',
+    presentation: 'Intermittent skipped beats during observation',
+    bpm: 84,
+    pulse: 'Pulse present',
+    hemodynamics: 'Stable and alert',
+    clues: ['Every third beat is a PVC', 'Two conducted beats occur before the wide premature beat', 'Pattern repeats regularly'],
+    question: 'Which rhythm pattern best fits this strip?',
+    options: ['Ventricular bigeminy', 'Third-degree AV block', 'Ventricular trigeminy', 'Pulseless VT'],
+    answer: 2,
+    why: 'PVCs every third beat is ventricular trigeminy. Like bigeminy, this usually prompts evaluation of symptoms and triggers, not immediate shock in a stable patient.',
+    ecg: '10,56 18,18 22,76 26,44 34,56 42,18 46,76 50,44 58,56 66,18 70,76 74,44 82,56',
+  },
 ];
 
 function StatCard({ label, value }) {
@@ -143,8 +218,8 @@ export default function App() {
             <div className="eyebrow">Rhythm Study Game</div>
             <h1>Read the clues. Pick the rhythm branch. Learn the treatment.</h1>
             <p className="hero-copy">
-              This is a quiz, not a simulation. Each case asks for the immediate treatment path so you can separate
-              shock, CPR, antiarrhythmic infusion, and epinephrine.
+              This is a quiz, not a simulation. Some cases test immediate treatment. Others test rhythm recognition.
+              The goal is to learn both what the pattern is and what branch it belongs to.
             </p>
           </div>
           <div className="hero-stats">

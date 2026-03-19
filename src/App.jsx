@@ -139,8 +139,8 @@ export default function App() {
       <div className="app-card">
         <header className="topbar">
           <div>
-            <div className="eyebrow">Strip ID</div>
-            <h1>Identify the rhythm</h1>
+            <div className="eyebrow">ECG Practice</div>
+            <h1>Choose the correct rhythm for this strip.</h1>
           </div>
           <div className="score-row">
             <ScorePill label="Strip" value={`${index + 1}/${strips.length}`} />
@@ -149,6 +149,7 @@ export default function App() {
         </header>
 
         <section className="strip-card">
+          <div className="prompt-line">Question {index + 1} of {strips.length}</div>
           <div className="strip-meta">
             <div className="meta-item">
               <span>Rate</span>
@@ -179,7 +180,8 @@ export default function App() {
                   onClick={() => choose(optionIndex)}
                   disabled={revealed}
                 >
-                  {option}
+                  <span className="option-radio" />
+                  <span>{option}</span>
                 </button>
               );
             })}

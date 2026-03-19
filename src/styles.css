@@ -1,8 +1,8 @@
 :root {
   font-family: "Avenir Next", "Segoe UI", sans-serif;
-  color: #ecfeff;
-  background: linear-gradient(180deg, #03120f 0%, #071b17 100%);
-  color-scheme: dark;
+  color: #0f172a;
+  background: #f8fafc;
+  color-scheme: light;
 }
 
 * {
@@ -27,14 +27,14 @@ button {
 
 .page-shell {
   min-height: 100vh;
-  padding: 20px;
+  padding: 28px 20px 40px;
 }
 
 .app-card {
-  max-width: 820px;
+  max-width: 900px;
   margin: 0 auto;
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 .topbar,
@@ -43,10 +43,10 @@ button {
 .score-pill,
 .result-card,
 .option-button {
-  border: 1px solid rgba(167, 243, 208, 0.15);
-  background: rgba(3, 18, 15, 0.82);
-  border-radius: 22px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  border: 1px solid #dbe4ee;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
 }
 
 .topbar,
@@ -64,17 +64,19 @@ button {
 
 .eyebrow,
 .score-pill span,
-.meta-item span {
+.meta-item span,
+.prompt-line {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: #6ee7b7;
+  color: #64748b;
 }
 
 .topbar h1 {
   margin: 10px 0 0;
-  font-size: clamp(2rem, 5vw, 2.8rem);
-  line-height: 1.04;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  line-height: 1.15;
+  color: #0f172a;
 }
 
 .score-row {
@@ -92,12 +94,16 @@ button {
 .meta-item strong {
   display: block;
   margin-top: 6px;
-  color: #f0fdfa;
+  color: #0f172a;
 }
 
 .strip-card {
   display: grid;
   gap: 16px;
+}
+
+.prompt-line {
+  font-weight: 700;
 }
 
 .strip-meta {
@@ -107,20 +113,21 @@ button {
 
 .meta-item {
   padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(15, 118, 110, 0.12);
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .trace-box {
-  border-radius: 18px;
-  padding: 10px;
-  background: #fdf2f8;
-  border: 1px solid rgba(244, 114, 182, 0.18);
+  border-radius: 12px;
+  padding: 12px;
+  background: #fffafc;
+  border: 1px solid #e5e7eb;
 }
 
 .ecg-svg {
   width: 100%;
-  height: 220px;
+  height: 170px;
   display: block;
 }
 
@@ -145,44 +152,67 @@ button {
 
 .options-grid {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .option-button {
   padding: 16px 18px;
   text-align: left;
-  color: #ecfeff;
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .option-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  background: rgba(15, 118, 110, 0.18);
-  border-color: rgba(110, 231, 183, 0.3);
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.option-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1.6px solid #cbd5e1;
+  background: #ffffff;
+  flex: 0 0 auto;
 }
 
 .option-button.correct {
-  background: rgba(22, 163, 74, 0.18);
-  border-color: rgba(74, 222, 128, 0.35);
+  background: #f0fdf4;
+  border-color: #86efac;
 }
 
 .option-button.wrong {
-  background: rgba(185, 28, 28, 0.18);
-  border-color: rgba(248, 113, 113, 0.35);
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.option-button.correct .option-radio {
+  border-color: #22c55e;
+  background: #dcfce7;
+}
+
+.option-button.wrong .option-radio {
+  border-color: #ef4444;
+  background: #fee2e2;
 }
 
 .result-card {
   padding: 18px;
+  background: #f8fafc;
 }
 
 .result-card p {
   margin: 0;
   line-height: 1.6;
+  color: #334155;
 }
 
 .clue-line {
   margin-top: 8px !important;
-  color: #a7f3d0;
+  color: #475569;
 }
 
 .next-button {
@@ -190,8 +220,8 @@ button {
   border: 0;
   border-radius: 16px;
   padding: 12px 18px;
-  background: linear-gradient(135deg, #0f766e 0%, #34d399 100%);
-  color: #ecfeff;
+  background: #fcd34d;
+  color: #1f2937;
   font-weight: 700;
 }
 

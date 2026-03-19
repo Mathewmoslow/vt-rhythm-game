@@ -1,491 +1,262 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
-const phases = {
-  INTRO: 'intro',
-  CHOICE: 'choice',
-  TIMING: 'timing',
-  RESULT: 'result',
-};
-
-const signMeta = {
-  hypotension: 'Hypotension',
-  alteredMentalStatus: 'Altered mental status',
-  shock: 'Shock',
-  chestDiscomfort: 'Chest discomfort',
-  acuteHeartFailure: 'Acute heart failure',
-};
-
-const scenarios = [
+const cases = [
   {
-    id: 'unstable-vt-01',
-    title: 'Round 1',
-    subtitle: 'Unstable with a pulse',
-    rhythmLabel: 'Persistent wide-complex tachycardia',
-    likelyRhythm: 'Likely monomorphic VT',
-    bpm: 182,
-    qrs: 'Wide',
-    unstableFlags: {
-      hypotension: true,
-      alteredMentalStatus: true,
-      shock: false,
-      chestDiscomfort: false,
-      acuteHeartFailure: false,
-    },
-    recommended: 'cardiovert',
-    hint: 'Instability is present, so this is the urgent synchronized cardioversion branch.',
-    executionBpm: 94,
-    beatCount: 8,
-    syncWindows: [1, 3, 5, 7],
-    copy: {
-      summary: 'The patient has a wide-complex tachycardia and is not stable.',
-      why: 'When instability is present, the study point is to recognize the urgent branch quickly.',
-      success: 'You recognized the unstable branch and executed it cleanly.',
-      failure: 'The rhythm branch was missed or the timing was too erratic. Unstable cases need fast recognition.',
-    },
-  },
-  {
-    id: 'stable-vt-02',
-    title: 'Round 2',
-    subtitle: 'Stable but still dangerous',
-    rhythmLabel: 'Stable wide-QRS tachycardia',
-    likelyRhythm: 'Likely VT until proven otherwise',
+    id: 'stable-vt',
+    title: 'Case 1',
+    rhythm: 'Regular monomorphic wide-complex tachycardia',
+    likely: 'Stable VT with a pulse',
     bpm: 166,
-    qrs: 'Wide',
-    unstableFlags: {
-      hypotension: false,
-      alteredMentalStatus: false,
-      shock: false,
-      chestDiscomfort: false,
-      acuteHeartFailure: false,
-    },
-    recommended: 'infuse',
-    hint: 'No instability signs are showing, so this stays on the antiarrhythmic drug-treatment path.',
-    executionBpm: 116,
-    beatCount: 10,
-    syncWindows: [],
-    copy: {
-      summary: 'The rhythm is serious, but the patient is stable right now.',
-      why: 'Stable wide-complex tachycardia is not the same branch as unstable tachycardia.',
-      success: 'You stayed on the stable treatment branch and kept control through the rhythm round.',
-      failure: 'The key miss here is treating a stable case like an unstable one or losing rhythm control.',
-    },
+    pulse: 'Present',
+    hemodynamics: 'Stable',
+    clues: ['Wide QRS', 'Regular rhythm', 'No hypotension', 'No altered mental status', 'No shock signs'],
+    question: 'What is the best immediate treatment path?',
+    options: [
+      'Synchronized cardioversion',
+      'CPR and defibrillation',
+      'Antiarrhythmic infusion (eg amiodarone)',
+      'Epinephrine ASAP',
+    ],
+    answer: 2,
+    why: 'Stable wide-QRS tachycardia goes down the antiarrhythmic-infusion path. This is not the CPR/defibrillation branch because there is still a pulse.',
+    ecg: '16,52 24,50 28,48 32,46 36,22 40,70 44,40 48,52 52,50 56,48 60,24 64,72 68,42 72,52 76,50 80,48',
   },
   {
-    id: 'borderline-03',
-    title: 'Round 3',
-    subtitle: 'Noisy monitor, unstable patient',
-    rhythmLabel: 'Wide-complex tachycardia with artifact',
-    likelyRhythm: 'Probable VT',
-    bpm: 194,
-    qrs: 'Wide',
-    unstableFlags: {
-      hypotension: true,
-      alteredMentalStatus: false,
-      shock: true,
-      chestDiscomfort: true,
-      acuteHeartFailure: false,
-    },
-    recommended: 'cardiovert',
-    hint: 'Ignore the noisy monitor. The patient still looks unstable.',
-    executionBpm: 104,
-    beatCount: 12,
-    syncWindows: [2, 5, 8, 10],
-    copy: {
-      summary: 'The strip is messy, but the patient clues still point to the unstable branch.',
-      why: 'The study point is to anchor on patient status instead of getting lost in signal noise.',
-      success: 'You focused on the patient, chose the right branch, and stayed on beat.',
-      failure: 'The patient clues pointed to instability, but the branch or timing did not hold together.',
-    },
+    id: 'unstable-vt',
+    title: 'Case 2',
+    rhythm: 'Regular monomorphic wide-complex tachycardia',
+    likely: 'Unstable VT with a pulse',
+    bpm: 184,
+    pulse: 'Present',
+    hemodynamics: 'Unstable',
+    clues: ['Wide QRS', 'Hypotension', 'Altered mental status', 'Pulse still present'],
+    question: 'What is the best immediate treatment path?',
+    options: [
+      'Synchronized cardioversion',
+      'CPR and defibrillation',
+      'Antiarrhythmic infusion (eg amiodarone)',
+      'Epinephrine ASAP',
+    ],
+    answer: 0,
+    why: 'When tachycardia with a pulse is causing hypotension, altered mental status, shock, ischemic chest discomfort, or acute heart failure, the immediate branch is synchronized cardioversion.',
+    ecg: '14,54 22,50 26,46 30,18 34,74 38,42 42,54 46,50 50,46 54,20 58,74 62,42 66,54 70,50 74,46 78,18 82,74 86,42',
+  },
+  {
+    id: 'pulseless-vt',
+    title: 'Case 3',
+    rhythm: 'Pulseless VT / shockable arrest',
+    likely: 'Cardiac arrest, shockable rhythm',
+    bpm: 'Very fast',
+    pulse: 'Absent',
+    hemodynamics: 'Arrest',
+    clues: ['No pulse', 'Unresponsive', 'Shockable rhythm on monitor'],
+    question: 'What is the best immediate next step?',
+    options: [
+      'Synchronized cardioversion',
+      'CPR and defibrillation',
+      'Amiodarone first',
+      'Epinephrine first',
+    ],
+    answer: 1,
+    why: 'Pulseless VT/VF is a shockable cardiac-arrest rhythm. Start high-quality CPR and defibrillate. Epinephrine and amiodarone come later in the arrest algorithm, not before the first shock/CPR cycle.',
+    ecg: '12,60 18,28 24,78 30,26 36,76 42,24 48,78 54,26 60,76 66,24 72,78 78,26 84,76',
+  },
+  {
+    id: 'pea',
+    title: 'Case 4',
+    rhythm: 'Organized electrical activity without a pulse',
+    likely: 'PEA / nonshockable arrest',
+    bpm: 48,
+    pulse: 'Absent',
+    hemodynamics: 'Arrest',
+    clues: ['No pulse', 'Organized rhythm present', 'Unresponsive', 'Nonshockable arrest'],
+    question: 'What is the best immediate next step?',
+    options: [
+      'Shock now',
+      'CPR and epinephrine',
+      'Amiodarone',
+      'Synchronized cardioversion',
+    ],
+    answer: 1,
+    why: 'PEA is not a shockable rhythm. The immediate branch is high-quality CPR plus epinephrine as soon as possible, while you search for reversible causes.',
+    ecg: '14,58 20,56 26,58 32,54 38,56 44,58 50,56 56,58 62,54 68,56 74,58 80,56 86,58',
   },
 ];
 
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-
-function getTimingTier(deltaMs) {
-  const abs = Math.abs(deltaMs);
-  if (abs <= 90) return 'Perfect';
-  if (abs <= 170) return 'Great';
-  if (abs <= 260) return 'Safe';
-  return 'Miss';
-}
-
-function tierScore(tier) {
-  if (tier === 'Perfect') return 100;
-  if (tier === 'Great') return 75;
-  if (tier === 'Safe') return 45;
-  return 0;
-}
-
-function buildEcgPath(points = 80, amplitude = 1, noise = 0.08) {
-  const values = [];
-  for (let i = 0; i < points; i += 1) {
-    const x = (i / (points - 1)) * 100;
-    let y = 50;
-    const beat = i % 16;
-    if (beat === 3) y = 58;
-    else if (beat === 4) y = 44;
-    else if (beat === 5) y = 10;
-    else if (beat === 6) y = 63;
-    else if (beat === 7) y = 47;
-    else y = 50 + Math.sin(i / 3.6) * 4 * amplitude;
-    y += (Math.sin(i * 1.7) + Math.cos(i * 0.9)) * noise * 10;
-    values.push(`${x},${clamp(y, 4, 96)}`);
-  }
-  return values.join(' ');
-}
-
-function StatPill({ label, value }) {
+function StatCard({ label, value }) {
   return (
-    <div className="stat-pill">
-      <span>{label}</span>
-      <strong>{value}</strong>
+    <div className="stat-card">
+      <div className="stat-label">{label}</div>
+      <div className="stat-value">{value}</div>
     </div>
   );
 }
 
 export default function App() {
-  const [scenarioIndex, setScenarioIndex] = useState(0);
-  const [phase, setPhase] = useState(phases.INTRO);
-  const [selectedAction, setSelectedAction] = useState(null);
-  const [attempts, setAttempts] = useState([]);
-  const [beatIndex, setBeatIndex] = useState(0);
-  const [beatProgress, setBeatProgress] = useState(0);
-  const [latestTier, setLatestTier] = useState(null);
-  const [roundScore, setRoundScore] = useState(0);
-  const [studyScore, setStudyScore] = useState(0);
-  const [result, setResult] = useState(null);
-  const [runComplete, setRunComplete] = useState(false);
-  const executionStartRef = useRef(null);
-  const animationFrameRef = useRef(0);
+  const [caseIndex, setCaseIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [revealed, setRevealed] = useState(false);
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
 
-  const activeScenario = scenarios[scenarioIndex];
-  const cycleMs = Math.round(60000 / activeScenario.executionBpm);
-  const totalBeats = activeScenario.beatCount;
-  const ecgPath = buildEcgPath(90, 1 + scenarioIndex * 0.12, 0.1 + scenarioIndex * 0.04);
+  const activeCase = cases[caseIndex];
+  const correct = selectedIndex === activeCase.answer;
+  const progress = `${caseIndex + 1} / ${cases.length}`;
 
-  const presentSigns = useMemo(
-    () =>
-      Object.entries(activeScenario.unstableFlags)
-        .filter(([, value]) => value)
-        .map(([key]) => signMeta[key]),
-    [activeScenario]
-  );
+  const heading = useMemo(() => {
+    if (!revealed) return 'Choose the next step';
+    return correct ? 'Correct' : 'Not quite';
+  }, [revealed, correct]);
 
-  const accuracy = attempts.length
-    ? Math.round(
-        (attempts.reduce((sum, item) => sum + tierScore(item.tier), 0) / (attempts.length * 100)) * 100
-      )
-    : 0;
+  function submitAnswer(index) {
+    if (revealed) return;
+    setSelectedIndex(index);
+    setRevealed(true);
 
-  useEffect(() => {
-    if (phase !== phases.TIMING) {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      return undefined;
+    if (index === activeCase.answer) {
+      setScore((prev) => prev + 100);
+      setStreak((prev) => prev + 1);
+    } else {
+      setStreak(0);
     }
-
-    let cancelled = false;
-
-    const loop = (timestamp) => {
-      if (cancelled) return;
-      if (executionStartRef.current === null) {
-        executionStartRef.current = timestamp;
-      }
-
-      const elapsed = timestamp - executionStartRef.current;
-      const currentBeat = Math.floor(elapsed / cycleMs);
-      const progress = (elapsed % cycleMs) / cycleMs;
-
-      setBeatIndex(Math.min(currentBeat, totalBeats - 1));
-      setBeatProgress(progress);
-
-      if (currentBeat >= totalBeats) {
-        finishRound();
-        return;
-      }
-
-      animationFrameRef.current = requestAnimationFrame(loop);
-    };
-
-    animationFrameRef.current = requestAnimationFrame(loop);
-
-    return () => {
-      cancelled = true;
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [phase, cycleMs, totalBeats]);
-
-  function resetRound(nextIndex = scenarioIndex) {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    setScenarioIndex(nextIndex);
-    setPhase(phases.INTRO);
-    setSelectedAction(null);
-    setAttempts([]);
-    setBeatIndex(0);
-    setBeatProgress(0);
-    setLatestTier(null);
-    setRoundScore(0);
-    setResult(null);
-    setRunComplete(false);
-    executionStartRef.current = null;
   }
 
-  function startChoice() {
-    setPhase(phases.CHOICE);
-  }
-
-  function chooseAction(action) {
-    setSelectedAction(action);
-    setAttempts([]);
-    setBeatIndex(0);
-    setBeatProgress(0);
-    setLatestTier(null);
-    setRoundScore(action === activeScenario.recommended ? 150 : 0);
-    executionStartRef.current = null;
-    setPhase(phases.TIMING);
-  }
-
-  function registerBeatHit() {
-    if (phase !== phases.TIMING || executionStartRef.current === null) return;
-
-    const now = performance.now();
-    const elapsed = now - executionStartRef.current;
-    const currentBeat = Math.floor(elapsed / cycleMs);
-    if (currentBeat >= totalBeats) return;
-
-    const beatCenter = currentBeat * cycleMs + cycleMs / 2;
-    const deltaMs = elapsed - beatCenter;
-    const tier = getTimingTier(deltaMs);
-    const syncBeats = activeScenario.syncWindows || [];
-    const beatMatters = selectedAction === 'cardiovert' ? syncBeats.includes(currentBeat) : true;
-    const effectiveTier = beatMatters ? tier : 'Safe';
-
-    setAttempts((prev) => [...prev, { targetBeat: currentBeat + 1, tier: effectiveTier }]);
-    setLatestTier(effectiveTier);
-    setRoundScore((prev) => prev + tierScore(effectiveTier));
-  }
-
-  function finishRound() {
-    const correctChoice = selectedAction === activeScenario.recommended;
-    const passedTiming = accuracy >= 45;
-    const passed = correctChoice && passedTiming;
-
-    const nextResult = {
-      passed,
-      correctChoice,
-      passedTiming,
-      recommended:
-        activeScenario.recommended === 'cardiovert' ? 'SYNC CARDIOVERT' : 'DRUG TREATMENT PATH',
-      explanation: activeScenario.copy.why,
-      summary: passed ? activeScenario.copy.success : activeScenario.copy.failure,
-    };
-
-    setResult(nextResult);
-    setStudyScore((prev) => prev + roundScore);
-    setPhase(phases.RESULT);
-  }
-
-  function nextRound() {
-    if (scenarioIndex < scenarios.length - 1) {
-      resetRound(scenarioIndex + 1);
+  function nextCase() {
+    if (caseIndex === cases.length - 1) {
+      setCaseIndex(0);
+      setSelectedIndex(null);
+      setRevealed(false);
+      setStreak(0);
       return;
     }
-    setRunComplete(true);
-    resetRound(0);
+
+    setCaseIndex((prev) => prev + 1);
+    setSelectedIndex(null);
+    setRevealed(false);
   }
 
-  const progressLabel =
-    phase === phases.INTRO
-      ? 'Read case'
-      : phase === phases.CHOICE
-        ? 'Pick path'
-        : phase === phases.TIMING
-          ? 'Play round'
-          : 'See result';
-
   return (
-    <div className="app-shell">
-      <div className="app-frame">
-        <header className="topbar">
+    <div className="page-shell">
+      <div className="page-inner">
+        <header className="hero-card">
           <div>
-            <div className="eyebrow">VT Study Game</div>
-            <h1>One case. One choice. One quick rhythm round.</h1>
-            <p className="intro-copy">
-              This is a study game, not a dashboard. Read the case, pick the treatment path, play the beat round,
-              then get the takeaway.
+            <div className="eyebrow">Rhythm Study Game</div>
+            <h1>Read the clues. Pick the rhythm branch. Learn the treatment.</h1>
+            <p className="hero-copy">
+              This is a quiz, not a simulation. Each case asks for the immediate treatment path so you can separate
+              shock, CPR, antiarrhythmic infusion, and epinephrine.
             </p>
           </div>
-          <div className="score-stack">
-            <StatPill label="Round" value={`${scenarioIndex + 1}/${scenarios.length}`} />
-            <StatPill label="Step" value={progressLabel} />
-            <StatPill label="Study score" value={studyScore + roundScore} />
+          <div className="hero-stats">
+            <StatCard label="Case" value={progress} />
+            <StatCard label="Score" value={score} />
+            <StatCard label="Streak" value={streak} />
           </div>
         </header>
 
-        <main className="game-card">
-          <section className="case-panel">
-            <div className="case-head">
+        <main className="quiz-layout">
+          <section className="panel case-panel">
+            <div className="case-top">
               <div>
-                <div className="eyebrow">{activeScenario.title}</div>
-                <h2>{activeScenario.subtitle}</h2>
+                <div className="eyebrow">{activeCase.title}</div>
+                <h2>{activeCase.likely}</h2>
               </div>
-              <div className="tag">{activeScenario.rhythmLabel}</div>
+              <div className={`state-chip state-${activeCase.hemodynamics.toLowerCase()}`}>{activeCase.hemodynamics}</div>
             </div>
 
-            <div className="stats-row">
-              <StatPill label="Likely rhythm" value={activeScenario.likelyRhythm} />
-              <StatPill label="Rate" value={`${activeScenario.bpm} BPM`} />
-              <StatPill label="QRS" value={activeScenario.qrs} />
+            <div className="stats-grid">
+              <StatCard label="Monitor" value={activeCase.rhythm} />
+              <StatCard label="Rate" value={`${activeCase.bpm}`} />
+              <StatCard label="Pulse" value={activeCase.pulse} />
             </div>
 
-            <div className="trace-card">
+            <div className="trace-box">
               <svg viewBox="0 0 100 100" className="ecg-svg" aria-label="ECG trace">
-                <polyline
-                  fill="none"
-                  stroke="url(#ecgGlow)"
-                  strokeWidth="1.8"
-                  points={ecgPath}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
                 <defs>
-                  <linearGradient id="ecgGlow" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#f97316" stopOpacity="0.35" />
-                    <stop offset="50%" stopColor="#fde68a" stopOpacity="1" />
-                    <stop offset="100%" stopColor="#f97316" stopOpacity="0.35" />
+                  <linearGradient id="lineGlow" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.3" />
+                    <stop offset="50%" stopColor="#f8fafc" stopOpacity="1" />
+                    <stop offset="100%" stopColor="#22d3ee" stopOpacity="0.3" />
                   </linearGradient>
                 </defs>
+                <polyline
+                  fill="none"
+                  stroke="url(#lineGlow)"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  points={activeCase.ecg}
+                />
               </svg>
             </div>
 
-            <div className="clue-panel">
-              <div className="eyebrow">Patient clues</div>
-              <ul className="clue-list">
-                {presentSigns.length ? (
-                  presentSigns.map((sign) => <li key={sign}>{sign}</li>)
-                ) : (
-                  <li>No instability signs are currently present.</li>
-                )}
+            <div className="clue-box">
+              <div className="eyebrow">Clues</div>
+              <ul>
+                {activeCase.clues.map((clue) => (
+                  <li key={clue}>{clue}</li>
+                ))}
               </ul>
             </div>
           </section>
 
-          {phase === phases.INTRO ? (
-            <section className="play-panel">
-              <div className="phase-card">
-                <div className="eyebrow">Step 1</div>
-                <h3>Read the case</h3>
-                <p>{activeScenario.copy.summary}</p>
-                <p className="helper-copy">{activeScenario.hint}</p>
-                <button type="button" className="primary-button" onClick={startChoice}>
-                  Start round
+          <section className="panel question-panel">
+            <div className="question-head">
+              <div className="eyebrow">Question</div>
+              <h2>{heading}</h2>
+              <p>{activeCase.question}</p>
+            </div>
+
+            <div className="options-grid">
+              {activeCase.options.map((option, index) => {
+                const isSelected = selectedIndex === index;
+                const isCorrect = revealed && index === activeCase.answer;
+                const isWrong = revealed && isSelected && index !== activeCase.answer;
+                const stateClass = isCorrect ? 'option-correct' : isWrong ? 'option-wrong' : '';
+
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`option-card ${stateClass}`}
+                    disabled={revealed}
+                    onClick={() => submitAnswer(index)}
+                  >
+                    <span className="option-letter">{String.fromCharCode(65 + index)}</span>
+                    <span className="option-text">{option}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {revealed ? (
+              <div className={`result-box ${correct ? 'result-correct' : 'result-wrong'}`}>
+                <div className="eyebrow">Why</div>
+                <p>{activeCase.why}</p>
+                <div className="answer-line">
+                  Best answer: <strong>{activeCase.options[activeCase.answer]}</strong>
+                </div>
+                <button type="button" className="primary-button" onClick={nextCase}>
+                  {caseIndex === cases.length - 1 ? 'Restart cases' : 'Next case'}
                 </button>
               </div>
-            </section>
-          ) : null}
-
-          {phase === phases.CHOICE ? (
-            <section className="play-panel">
-              <div className="phase-card">
-                <div className="eyebrow">Step 2</div>
-                <h3>Which path fits this case?</h3>
-                <p>Pick the branch first. The rhythm round comes after the choice.</p>
-                <div className="choice-grid">
-                  <button type="button" className="choice-button danger" onClick={() => chooseAction('cardiovert')}>
-                    <span>SYNC CARDIOVERT</span>
-                    <small>Use for unstable tachycardia with a pulse.</small>
-                  </button>
-                  <button type="button" className="choice-button calm" onClick={() => chooseAction('infuse')}>
-                    <span>DRUG TREATMENT PATH</span>
-                    <small>Use for stable wide-complex tachycardia.</small>
-                  </button>
-                </div>
-              </div>
-            </section>
-          ) : null}
-
-          {phase === phases.TIMING ? (
-            <section className="play-panel">
-              <div className="phase-card">
-                <div className="eyebrow">Step 3</div>
-                <h3>Play the rhythm round</h3>
+            ) : (
+              <div className="study-tip">
+                <div className="eyebrow">How to think</div>
                 <p>
-                  {selectedAction === 'cardiovert'
-                    ? 'Tap in time when the highlighted sync beats reach center.'
-                    : 'Tap steadily in time. This round is about keeping a stable treatment rhythm.'}
+                  Ask these in order: Is there a pulse? Is the patient stable or unstable? Is this shockable or
+                  nonshockable? That tells you whether the answer is shock, CPR, antiarrhythmic, or epinephrine.
                 </p>
-
-                <div className="lane-shell">
-                  <div className="lane-head">
-                    <span>Beat {Math.min(beatIndex + 1, totalBeats)} / {totalBeats}</span>
-                    <span>{activeScenario.executionBpm} BPM</span>
-                  </div>
-                  <div className="timing-lane">
-                    <div className="center-line" />
-                    <div className="timing-window" />
-                    {Array.from({ length: totalBeats }).map((_, index) => {
-                      const position = ((index - beatIndex) + (1 - beatProgress)) * 64 + 160;
-                      const isSyncBeat = (activeScenario.syncWindows || []).includes(index);
-                      return (
-                        <div
-                          key={`beat-${index}`}
-                          className={`beat-dot ${isSyncBeat && selectedAction === 'cardiovert' ? 'sync-beat' : ''}`}
-                          style={{ left: `${position}px`, opacity: position > -20 && position < 340 ? 1 : 0.18 }}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="timing-feedback">
-                  <StatPill label="Latest" value={latestTier || 'Waiting'} />
-                  <StatPill label="Accuracy" value={`${accuracy}%`} />
-                  <StatPill label="Round score" value={roundScore} />
-                </div>
-
-                <button type="button" className="primary-button pulse-button" onClick={registerBeatHit}>
-                  Tap on beat
-                </button>
               </div>
-            </section>
-          ) : null}
-
-          {phase === phases.RESULT && result ? (
-            <section className="play-panel">
-              <div className={`phase-card result-card ${result.passed ? 'success' : 'failure'}`}>
-                <div className="eyebrow">Result</div>
-                <h3>{result.passed ? 'Correct branch' : 'Study this one again'}</h3>
-                <p>{result.summary}</p>
-
-                <div className="result-grid">
-                  <StatPill label="Best answer" value={result.recommended} />
-                  <StatPill label="Your choice" value={selectedAction === 'cardiovert' ? 'SYNC CARDIOVERT' : 'DRUG TREATMENT PATH'} />
-                  <StatPill label="Timing accuracy" value={`${accuracy}%`} />
-                </div>
-
-                <div className="takeaway-box">
-                  <div className="eyebrow">Takeaway</div>
-                  <p>{result.explanation}</p>
-                </div>
-
-                <button type="button" className="primary-button" onClick={nextRound}>
-                  {scenarioIndex < scenarios.length - 1 ? 'Next round' : 'Restart run'}
-                </button>
-              </div>
-            </section>
-          ) : null}
+            )}
+          </section>
         </main>
 
         <footer className="footer-note">
-          <p>Educational game only. This is not clinical guidance or patient-specific treatment advice.</p>
-          {runComplete ? <p>You finished the run. Restarting sends you back to Round 1.</p> : null}
+          <p>
+            Study framing only. Verified against the American Heart Association 2025 Adult Tachyarrhythmia With a
+            Pulse Algorithm and 2025 Adult Cardiac Arrest Algorithm.
+          </p>
         </footer>
       </div>
     </div>

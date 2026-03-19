@@ -5,11 +5,11 @@ const cases = [
     id: 'stable-vt',
     title: 'Case 1',
     rhythm: 'Regular monomorphic wide-complex tachycardia',
-    likely: 'Stable VT with a pulse',
+    presentation: 'Palpitations and dizziness during evaluation',
     bpm: 166,
-    pulse: 'Present',
-    hemodynamics: 'Stable',
-    clues: ['Wide QRS', 'Regular rhythm', 'No hypotension', 'No altered mental status', 'No shock signs'],
+    pulse: 'Palpable radial pulse',
+    hemodynamics: 'Blood pressure 118/74, awake, speaking clearly',
+    clues: ['Complains of palpitations', 'Skin warm', 'No chest pain reported', 'No respiratory distress'],
     question: 'What is the best immediate treatment path?',
     options: [
       'Synchronized cardioversion',
@@ -25,11 +25,11 @@ const cases = [
     id: 'unstable-vt',
     title: 'Case 2',
     rhythm: 'Regular monomorphic wide-complex tachycardia',
-    likely: 'Unstable VT with a pulse',
+    presentation: 'Sudden deterioration during monitor check',
     bpm: 184,
-    pulse: 'Present',
-    hemodynamics: 'Unstable',
-    clues: ['Wide QRS', 'Hypotension', 'Altered mental status', 'Pulse still present'],
+    pulse: 'Carotid pulse present',
+    hemodynamics: 'Blood pressure 76/40, confused, pale',
+    clues: ['Diaphoretic', 'Hard to answer questions', 'Weak peripheral perfusion', 'Not in cardiac arrest'],
     question: 'What is the best immediate treatment path?',
     options: [
       'Synchronized cardioversion',
@@ -44,12 +44,12 @@ const cases = [
   {
     id: 'pulseless-vt',
     title: 'Case 3',
-    rhythm: 'Pulseless VT / shockable arrest',
-    likely: 'Cardiac arrest, shockable rhythm',
+    rhythm: 'Very rapid wide-complex rhythm',
+    presentation: 'Collapsed patient on the floor',
     bpm: 'Very fast',
-    pulse: 'Absent',
-    hemodynamics: 'Arrest',
-    clues: ['No pulse', 'Unresponsive', 'Shockable rhythm on monitor'],
+    pulse: 'No palpable pulse',
+    hemodynamics: 'Unresponsive and apneic',
+    clues: ['Monitor shows a chaotic rapid ventricular rhythm', 'Patient does not respond', 'No normal perfusion signs'],
     question: 'What is the best immediate next step?',
     options: [
       'Synchronized cardioversion',
@@ -64,12 +64,12 @@ const cases = [
   {
     id: 'pea',
     title: 'Case 4',
-    rhythm: 'Organized electrical activity without a pulse',
-    likely: 'PEA / nonshockable arrest',
+    rhythm: 'Organized slow electrical rhythm',
+    presentation: 'Unresponsive patient with monitor activity',
     bpm: 48,
-    pulse: 'Absent',
-    hemodynamics: 'Arrest',
-    clues: ['No pulse', 'Organized rhythm present', 'Unresponsive', 'Nonshockable arrest'],
+    pulse: 'No palpable pulse',
+    hemodynamics: 'Unresponsive and not breathing normally',
+    clues: ['Monitor shows organized complexes', 'No signs of circulation', 'Rhythm is not chaotic or fibrillating'],
     question: 'What is the best immediate next step?',
     options: [
       'Shock now',
@@ -159,15 +159,19 @@ export default function App() {
             <div className="case-top">
               <div>
                 <div className="eyebrow">{activeCase.title}</div>
-                <h2>{activeCase.likely}</h2>
+                <h2>{activeCase.presentation}</h2>
               </div>
-              <div className={`state-chip state-${activeCase.hemodynamics.toLowerCase()}`}>{activeCase.hemodynamics}</div>
             </div>
 
             <div className="stats-grid">
               <StatCard label="Monitor" value={activeCase.rhythm} />
               <StatCard label="Rate" value={`${activeCase.bpm}`} />
               <StatCard label="Pulse" value={activeCase.pulse} />
+            </div>
+
+            <div className="hemodynamics-card">
+              <div className="stat-label">Presentation</div>
+              <div className="stat-value">{activeCase.hemodynamics}</div>
             </div>
 
             <div className="trace-box">
@@ -244,8 +248,8 @@ export default function App() {
               <div className="study-tip">
                 <div className="eyebrow">How to think</div>
                 <p>
-                  Ask these in order: Is there a pulse? Is the patient stable or unstable? Is this shockable or
-                  nonshockable? That tells you whether the answer is shock, CPR, antiarrhythmic, or epinephrine.
+                  Decide it yourself from the clues: first pulse or no pulse, then stable or unstable, then whether
+                  the arrest rhythm is shockable or not. Use that logic to choose the next step.
                 </p>
               </div>
             )}

@@ -135,29 +135,6 @@ button:disabled {
   align-items: flex-start;
 }
 
-.state-chip {
-  border-radius: 999px;
-  padding: 10px 14px;
-  font-size: 0.86rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.state-stable {
-  background: rgba(14, 165, 233, 0.15);
-  color: #bae6fd;
-}
-
-.state-unstable {
-  background: rgba(251, 146, 60, 0.15);
-  color: #fed7aa;
-}
-
-.state-arrest {
-  background: rgba(239, 68, 68, 0.14);
-  color: #fecaca;
-}
-
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -179,7 +156,8 @@ button:disabled {
 .trace-box,
 .clue-box,
 .result-box,
-.study-tip {
+.study-tip,
+.hemodynamics-card {
   border-radius: 22px;
   padding: 20px;
 }
